@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ClockIcon, AdjustmentsHorizontalIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
-import GlassCard from '../components/GlassCard';
+import SurfaceCard from '../components/SurfaceCard';
 import { apiGet, apiPost } from '../api/client';
 
 type Settings = {
@@ -14,7 +14,7 @@ type Settings = {
 };
 
 const inputClass =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition';
+  'w-full rounded-lg border border-[#1f2937] bg-[#0b0f14] px-3 py-2 text-sm text-[#e5e7eb] placeholder:text-[#6b7280] focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#2f3b56] transition';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -36,38 +36,38 @@ export default function SettingsPage() {
     setSettings((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
-  if (!settings) return <p className="text-sm text-slate-600">Loading...</p>;
+  if (!settings) return <p className="text-sm text-[#9ca3af]">Loading...</p>;
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <GlassCard
+      <SurfaceCard
         title="Send window"
         subtitle="Respect local hours. Outside the window rolls to next start."
-        actions={<ClockIcon className="h-5 w-5 text-indigo-500" />}
+        actions={<ClockIcon className="h-5 w-5 text-[#6366f1]" />}
       >
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <label className="space-y-1 text-slate-800">
-            <span className="text-sm font-medium">Start time</span>
+          <label className="space-y-1 text-[#e5e7eb]">
+            <span className="text-sm font-medium text-white">Start time</span>
             <input className={inputClass} value={settings.start_time} onChange={(e) => updateField('start_time', e.target.value)} />
           </label>
-          <label className="space-y-1 text-slate-800">
-            <span className="text-sm font-medium">End time</span>
+          <label className="space-y-1 text-[#e5e7eb]">
+            <span className="text-sm font-medium text-white">End time</span>
             <input className={inputClass} value={settings.end_time} onChange={(e) => updateField('end_time', e.target.value)} />
           </label>
-          <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+          <div className="col-span-2 rounded-lg border border-[#1f2937] bg-[#161e2e] px-3 py-2 text-xs text-[#9ca3af]">
             Sends outside the window are delayed to the next eligible slot automatically.
           </div>
         </div>
-      </GlassCard>
+      </SurfaceCard>
 
-      <GlassCard
+      <SurfaceCard
         title="Cadence + caps"
         subtitle="Randomized pacing between every single send—no bursts or BCC."
-        actions={<AdjustmentsHorizontalIcon className="h-5 w-5 text-emerald-500" />}
+        actions={<AdjustmentsHorizontalIcon className="h-5 w-5 text-[#22c55e]" />}
       >
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <label className="space-y-1 text-slate-800">
-            <span className="text-sm font-medium">Interval min (minutes)</span>
+          <label className="space-y-1 text-[#e5e7eb]">
+            <span className="text-sm font-medium text-white">Interval min (minutes)</span>
             <input
               type="number"
               className={inputClass}
@@ -75,8 +75,8 @@ export default function SettingsPage() {
               onChange={(e) => updateField('interval_min', parseInt(e.target.value, 10))}
             />
           </label>
-          <label className="space-y-1 text-slate-800">
-            <span className="text-sm font-medium">Interval max (minutes)</span>
+          <label className="space-y-1 text-[#e5e7eb]">
+            <span className="text-sm font-medium text-white">Interval max (minutes)</span>
             <input
               type="number"
               className={inputClass}
@@ -84,8 +84,8 @@ export default function SettingsPage() {
               onChange={(e) => updateField('interval_max', parseInt(e.target.value, 10))}
             />
           </label>
-          <label className="space-y-1 text-slate-800">
-            <span className="text-sm font-medium">Daily cap</span>
+          <label className="space-y-1 text-[#e5e7eb]">
+            <span className="text-sm font-medium text-white">Daily cap</span>
             <input
               type="number"
               className={inputClass}
@@ -93,30 +93,30 @@ export default function SettingsPage() {
               onChange={(e) => updateField('daily_cap', parseInt(e.target.value, 10))}
             />
           </label>
-          <div className="flex flex-col justify-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <div className="flex flex-col justify-center rounded-lg border border-[#1f2937] bg-[#161e2e] px-3 py-2 text-xs text-[#f59e0b]">
             We stop scheduling once the cap is reached for the day.
           </div>
         </div>
-      </GlassCard>
+      </SurfaceCard>
 
-      <GlassCard
+      <SurfaceCard
         title="Timezone"
         subtitle="Align delivery with your recipients and compliance region."
-        actions={<GlobeAltIcon className="h-5 w-5 text-slate-500" />}
+        actions={<GlobeAltIcon className="h-5 w-5 text-[#9ca3af]" />}
       >
-        <div className="space-y-3 text-sm">
+        <div className="space-y-3 text-sm text-[#e5e7eb]">
           <input className={inputClass} value={settings.timezone} onChange={(e) => updateField('timezone', e.target.value)} />
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={save}
-            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="inline-flex items-center justify-center rounded-lg bg-[#6366f1] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4f54d8]"
           >
             {saving ? 'Saving…' : 'Save pacing + limits'}
           </motion.button>
-          <p className="text-xs text-slate-600">Randomized delay is applied between every email to mimic human sending.</p>
+          <p className="text-xs text-[#9ca3af]">Randomized delay is applied between every email to mimic human sending.</p>
         </div>
-      </GlassCard>
+      </SurfaceCard>
     </div>
   );
 }

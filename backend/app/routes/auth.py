@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from ..auth_google import auth_url, current_user, disconnect, exchange_code
@@ -15,10 +14,8 @@ def get_auth_url(state: str = "state"):
 
 @router.get("/callback")
 def oauth_callback(code: str = Query(...), db: Session = Depends(get_db)):
-    # Exchange code and persist credentials
-    exchange_code(db, code)
-    # Redirect back to the frontend root; UI will call /api/auth/me
-    return RedirectResponse(url="/")
+    user = exchange_code(db, code)
+    return {"email": user.email}
 
 
 @router.get("/me")

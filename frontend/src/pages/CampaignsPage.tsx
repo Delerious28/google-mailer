@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { PlayPauseIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import GlassCard from '../components/GlassCard';
+import SurfaceCard from '../components/SurfaceCard';
 import { apiGet, apiPost } from '../api/client';
 
 type Campaign = {
@@ -25,7 +25,7 @@ const emptyCampaign = {
 };
 
 const inputClass =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition';
+  'w-full rounded-lg border border-[#1f2937] bg-[#0b0f14] px-3 py-2 text-sm text-[#e5e7eb] placeholder:text-[#6b7280] focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#2f3b56] transition';
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -50,14 +50,14 @@ export default function CampaignsPage() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <GlassCard
+      <SurfaceCard
         title="Campaigns"
         subtitle="Mail 1 then Mail 2 after replies are checked. Everything stays permission-based."
-        actions={<SparklesIcon className="h-5 w-5 text-indigo-500" />}
+        actions={<SparklesIcon className="h-5 w-5 text-[#6366f1]" />}
       >
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <table className="min-w-full text-sm text-slate-800">
-            <thead className="bg-slate-50 text-left text-slate-600">
+        <div className="overflow-hidden rounded-xl border border-[#1f2937] bg-[#0b0f14]">
+          <table className="min-w-full text-sm text-[#e5e7eb]">
+            <thead className="bg-[#111827] text-left text-[#9ca3af]">
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4">Paused</th>
@@ -71,16 +71,16 @@ export default function CampaignsPage() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.02 }}
-                  className="border-t border-slate-200"
+                  className="border-t border-[#1f2937]"
                 >
-                  <td className="px-4 py-3 font-semibold text-slate-900">{c.name}</td>
+                  <td className="px-4 py-3 font-semibold text-white">{c.name}</td>
                   <td className="px-4">
                     <motion.button
                       whileTap={{ scale: 0.98 }}
-                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border ${
                         c.paused
-                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                          : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          ? 'border-[#1f2937] bg-[#161e2e] text-[#f59e0b]'
+                          : 'border-[#1f2937] bg-[#161e2e] text-[#22c55e]'
                       }`}
                       onClick={() => pause(c)}
                     >
@@ -88,15 +88,15 @@ export default function CampaignsPage() {
                       {c.paused ? 'Paused' : 'Live'}
                     </motion.button>
                   </td>
-                  <td className="px-4 text-slate-700">{c.delay_days} days</td>
+                  <td className="px-4 text-[#9ca3af]">{c.delay_days} days</td>
                 </motion.tr>
               ))}
             </tbody>
           </table>
         </div>
-      </GlassCard>
+      </SurfaceCard>
 
-      <GlassCard title="New campaign" subtitle="Define Mail 1 + Mail 2 templates with reply-aware follow-ups.">
+      <SurfaceCard title="New campaign" subtitle="Define Mail 1 + Mail 2 templates with reply-aware follow-ups.">
         <div className="space-y-3 text-sm">
           <input
             className={inputClass}
@@ -128,8 +128,8 @@ export default function CampaignsPage() {
             value={form.mail2_body}
             onChange={(e) => setForm({ ...form, mail2_body: e.target.value })}
           />
-          <label className="space-y-1 text-slate-800">
-            <span className="text-sm font-medium">Delay (days)</span>
+          <label className="space-y-1 text-[#e5e7eb]">
+            <span className="text-sm font-medium text-white">Delay (days)</span>
             <input
               type="number"
               className={inputClass}
@@ -140,14 +140,14 @@ export default function CampaignsPage() {
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
-            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="inline-flex items-center justify-center rounded-lg bg-[#6366f1] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4f54d8]"
             onClick={submit}
           >
             Create &amp; queue
           </motion.button>
-          <p className="text-xs text-slate-600">Mail 2 only sends when no reply is detected in the thread after Mail 1.</p>
+          <p className="text-xs text-[#9ca3af]">Mail 2 only sends when no reply is detected in the thread after Mail 1.</p>
         </div>
-      </GlassCard>
+      </SurfaceCard>
     </div>
   );
 }
