@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { PlayPauseIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import GlassCard from '../components/GlassCard';
 import { apiGet, apiPost } from '../api/client';
 
 type Campaign = {
@@ -20,6 +23,9 @@ const emptyCampaign = {
   mail2_body: '',
   delay_days: 3,
 };
+
+const inputClass =
+  'w-full rounded-xl border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:border-indigo-300/60 focus:outline-none focus:ring-2 focus:ring-indigo-300/40 transition';
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -43,77 +49,106 @@ export default function CampaignsPage() {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4">
-      <div className="col-span-2 bg-white p-6 rounded shadow">
-        <h2 className="text-xl font-semibold mb-4">Campaigns</h2>
-        <table className="min-w-full text-sm">
-          <thead className="text-left text-gray-600">
-            <tr>
-              <th className="py-2">Name</th>
-              <th>Paused</th>
-              <th>Delay days</th>
-            </tr>
-          </thead>
-          <tbody>
-            {campaigns.map((c) => (
-              <tr key={c.id} className="border-t">
-                <td className="py-2">{c.name}</td>
-                <td>
-                  <button className="text-blue-600" onClick={() => pause(c)}>
-                    {c.paused ? 'Resume' : 'Pause'}
-                  </button>
-                </td>
-                <td>{c.delay_days}</td>
+    <div className="grid gap-4 lg:grid-cols-3">
+      <GlassCard
+        title="Campaigns"
+        subtitle="Mail 1 then Mail 2 after replies are checked. Everything stays permission-based."
+        actions={<SparklesIcon className="h-5 w-5 text-indigo-300" />}
+      >
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900/60">
+          <table className="min-w-full text-sm">
+            <thead className="bg-white/5 text-left text-slate-300">
+              <tr>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4">Paused</th>
+                <th className="px-4">Delay days</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="bg-white p-6 rounded shadow space-y-3">
-        <h3 className="text-lg font-semibold">New campaign</h3>
-        <input
-          className="w-full border rounded px-2 py-2"
-          placeholder="Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <input
-          className="w-full border rounded px-2 py-2"
-          placeholder="Mail 1 subject"
-          value={form.mail1_subject}
-          onChange={(e) => setForm({ ...form, mail1_subject: e.target.value })}
-        />
-        <textarea
-          className="w-full border rounded px-2 py-2"
-          placeholder="Mail 1 body"
-          value={form.mail1_body}
-          onChange={(e) => setForm({ ...form, mail1_body: e.target.value })}
-        />
-        <input
-          className="w-full border rounded px-2 py-2"
-          placeholder="Mail 2 subject"
-          value={form.mail2_subject}
-          onChange={(e) => setForm({ ...form, mail2_subject: e.target.value })}
-        />
-        <textarea
-          className="w-full border rounded px-2 py-2"
-          placeholder="Mail 2 body"
-          value={form.mail2_body}
-          onChange={(e) => setForm({ ...form, mail2_body: e.target.value })}
-        />
-        <label className="text-sm space-y-1">
-          <span>Delay (days)</span>
+            </thead>
+            <tbody>
+              {campaigns.map((c, idx) => (
+                <motion.tr
+                  key={c.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.02 }}
+                  className="border-t border-white/10 text-slate-200"
+                >
+                  <td className="px-4 py-3 font-medium">{c.name}</td>
+                  <td className="px-4">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                        c.paused
+                          ? 'border border-amber-200/40 bg-amber-300/10 text-amber-100'
+                          : 'border border-emerald-200/40 bg-emerald-400/10 text-emerald-50'
+                      }`}
+                      onClick={() => pause(c)}
+                    >
+                      <PlayPauseIcon className="h-4 w-4" />
+                      {c.paused ? 'Paused' : 'Live'}
+                    </motion.button>
+                  </td>
+                  <td className="px-4 text-slate-300">{c.delay_days} days</td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+
+      <GlassCard title="New campaign" subtitle="Define mail 1 + mail 2 templates with smart reply-aware follow-ups.">
+        <div className="space-y-3 text-sm">
           <input
-            type="number"
-            className="w-full border rounded px-2 py-2"
-            value={form.delay_days}
-            onChange={(e) => setForm({ ...form, delay_days: parseInt(e.target.value, 10) })}
+            className={inputClass}
+            placeholder="Name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
-        </label>
-        <button className="px-4 py-2 bg-green-600 text-white rounded" onClick={submit}>
-          Create &amp; Queue
-        </button>
-      </div>
+          <input
+            className={inputClass}
+            placeholder="Mail 1 subject"
+            value={form.mail1_subject}
+            onChange={(e) => setForm({ ...form, mail1_subject: e.target.value })}
+          />
+          <textarea
+            className={inputClass + ' min-h-[80px]'}
+            placeholder="Mail 1 body"
+            value={form.mail1_body}
+            onChange={(e) => setForm({ ...form, mail1_body: e.target.value })}
+          />
+          <input
+            className={inputClass}
+            placeholder="Mail 2 subject"
+            value={form.mail2_subject}
+            onChange={(e) => setForm({ ...form, mail2_subject: e.target.value })}
+          />
+          <textarea
+            className={inputClass + ' min-h-[80px]'}
+            placeholder="Mail 2 body"
+            value={form.mail2_body}
+            onChange={(e) => setForm({ ...form, mail2_body: e.target.value })}
+          />
+          <label className="space-y-1">
+            <span className="text-slate-200">Delay (days)</span>
+            <input
+              type="number"
+              className={inputClass}
+              value={form.delay_days}
+              onChange={(e) => setForm({ ...form, delay_days: parseInt(e.target.value, 10) })}
+            />
+          </label>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-400 to-cyan-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-emerald-900/30"
+            onClick={submit}
+          >
+            Create &amp; queue
+          </motion.button>
+          <p className="text-xs text-slate-300">Mail 2 only sends when no reply is detected in the thread after Mail 1.</p>
+        </div>
+      </GlassCard>
     </div>
   );
 }

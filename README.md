@@ -42,7 +42,11 @@ TZ=UTC
    source .venv/bin/activate
    pip install fastapi uvicorn[standard] sqlalchemy google-auth google-auth-oauthlib google-api-python-client cryptography apscheduler pytz
    ```
-2. Run the API:
+2. Run the API (root entry point):
+   ```bash
+   python main.py
+   ```
+   Or, run directly with uvicorn if you prefer:
    ```bash
    uvicorn app.main:app --reload --port 8000
    ```
