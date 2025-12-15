@@ -4,10 +4,13 @@ from datetime import datetime
 from typing import Optional
 
 from cryptography.fernet import Fernet
+from pathlib import Path
 from fastapi import HTTPException
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google.oauth2 import id_token as google_id_token
 from google_auth_oauthlib.flow import Flow
+from pathlib import Path
 from sqlalchemy.orm import Session
 
 from .models import User
@@ -16,52 +19,130 @@ SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.readonly",
     "openid",
-    "email",
-    "profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
 ]
 
 
 def _fernet() -> Fernet:
+    """Return a Fernet instance.
+
+    Prefers ENCRYPTION_KEY env var; if missing, loads from encryption_key.txt in project root.
+    If the file does not exist, creates one with a new key.
+    """
     key = os.environ.get("ENCRYPTION_KEY")
     if not key:
-        raise RuntimeError("ENCRYPTION_KEY env var required for token encryption")
-    return Fernet(key.encode())
+        root = Path(__file__).resolve().parents[2]
+        key_file = root / "encryption_key.txt"
+        if key_file.exists():
+            key = key_file.read_text(encoding="utf-8").strip()
+        else:
+            # Generate a new key and persist it
+            key_bytes = Fernet.generate_key()
+            key = key_bytes.decode()
+            try:
+                key_file.write_text(key, encoding="utf-8")
+            except Exception:
+                pass
+    if not key:
+        raise RuntimeError("Missing encryption key. Set ENCRYPTION_KEY or ensure encryption_key.txt exists.")
+    # Accept both raw base64 or already bytes-encoded strings
+    return Fernet(key.encode() if isinstance(key, str) else key)
+
+
+def _load_client_config_from_json() -> Optional[dict]:
+    """Try to locate a client_secret*.json in project root and return config."""
+    try:
+        root = Path(__file__).resolve().parents[2]
+        # Prefer files starting with client_secret
+        candidates = list(root.glob("client_secret*.json")) or list(root.glob("*.json"))
+        for p in candidates:
+            with open(p, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            cfg = data.get("installed") or data.get("web")
+            if cfg and cfg.get("client_id") and cfg.get("client_secret"):
+                return cfg
+    except Exception:
+        pass
+    return None
 
 
 def get_flow(state: Optional[str] = None) -> Flow:
-    client_id = os.environ.get("GOOGLE_CLIENT_ID")
-    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
-    redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI")
+    # Prefer JSON client file
+    cfg = _load_client_config_from_json()
+    if cfg:
+        client_id = cfg.get("client_id")
+        client_secret = cfg.get("client_secret")
+        redirect_uris = cfg.get("redirect_uris") or ["http://localhost:8000/api/auth/callback"]
+        redirect_uri = redirect_uris[0]
+        # If the client file uses bare localhost, force our app callback path
+        if redirect_uri.strip().lower() in ("http://localhost", "https://localhost"):
+            redirect_uri = "http://localhost:8000/api/auth/callback"
+        auth_uri = cfg.get("auth_uri") or "https://accounts.google.com/o/oauth2/auth"
+        token_uri = cfg.get("token_uri") or "https://oauth2.googleapis.com/token"
+    else:
+        # Fallback to environment variables
+        client_id = os.environ.get("GOOGLE_CLIENT_ID")
+        client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
+        redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI") or "http://localhost:8000/api/auth/callback"
+        auth_uri = os.environ.get("GOOGLE_AUTH_URI") or "https://accounts.google.com/o/oauth2/auth"
+        token_uri = os.environ.get("GOOGLE_TOKEN_URI") or "https://oauth2.googleapis.com/token"
+
     if not all([client_id, client_secret, redirect_uri]):
-        raise RuntimeError("Google OAuth environment variables are missing")
-    return Flow(
-        client_config={
-            "installed": {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "redirect_uris": [redirect_uri],
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        },
-        scopes=SCOPES,
-        redirect_uri=redirect_uri,
-        state=state,
-    )
+        raise RuntimeError("Google OAuth configuration is missing (client id/secret/redirect).")
+
+    client_config = {
+        "installed": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "redirect_uris": [redirect_uri],
+            "auth_uri": auth_uri,
+            "token_uri": token_uri,
+        }
+    }
+    flow = Flow.from_client_config(client_config, scopes=SCOPES)
+    flow.redirect_uri = redirect_uri
+    # state is set when creating the authorization URL
+    return flow
 
 
 def auth_url(state: str) -> str:
     flow = get_flow(state)
-    flow.params.update({"access_type": "offline", "prompt": "consent"})
-    auth_uri, _ = flow.authorization_url(include_granted_scopes="true")
+    auth_uri, _ = flow.authorization_url(
+        access_type="offline",
+        include_granted_scopes="true",
+        prompt="consent",
+        state=state,
+    )
     return auth_uri
+
+
+def _email_from_credentials(credentials: Credentials) -> Optional[str]:
+    """Extract the user's email from OAuth credentials.
+
+    Prefer verifying the ID token; fall back to None if not available.
+    """
+    try:
+        if credentials.id_token:
+            # id_token is a JWT string; verify and parse
+            client_id = None
+            # Best effort to get client_id from internal attributes
+            try:
+                client_id = credentials._client_id  # type: ignore[attr-defined]
+            except Exception:
+                client_id = None
+            info = google_id_token.verify_oauth2_token(credentials.id_token, Request(), audience=client_id)
+            return info.get("email")
+    except Exception:
+        pass
+    return None
 
 
 def exchange_code(db: Session, code: str) -> User:
     flow = get_flow()
     flow.fetch_token(code=code)
     credentials = flow.credentials
-    email = credentials.id_token.get("email") if credentials.id_token else None
+    email = _email_from_credentials(credentials)
     if not email:
         raise HTTPException(status_code=400, detail="Unable to determine account email")
 
