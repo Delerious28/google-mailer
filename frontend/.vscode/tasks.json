@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build frontend with Vite",
+			"type": "shell",
+			"command": "npm run build",
+			"args": [],
+			"group": "build"
+		}
+	]
+}
