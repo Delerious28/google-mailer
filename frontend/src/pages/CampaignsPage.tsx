@@ -25,7 +25,7 @@ const emptyCampaign = {
 };
 
 const inputClass =
-  'w-full rounded-xl border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:border-indigo-300/60 focus:outline-none focus:ring-2 focus:ring-indigo-300/40 transition';
+  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition';
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -53,11 +53,11 @@ export default function CampaignsPage() {
       <GlassCard
         title="Campaigns"
         subtitle="Mail 1 then Mail 2 after replies are checked. Everything stays permission-based."
-        actions={<SparklesIcon className="h-5 w-5 text-indigo-300" />}
+        actions={<SparklesIcon className="h-5 w-5 text-indigo-500" />}
       >
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-900/60">
-          <table className="min-w-full text-sm">
-            <thead className="bg-white/5 text-left text-slate-300">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <table className="min-w-full text-sm text-slate-800">
+            <thead className="bg-slate-50 text-left text-slate-600">
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4">Paused</th>
@@ -71,17 +71,16 @@ export default function CampaignsPage() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.02 }}
-                  className="border-t border-white/10 text-slate-200"
+                  className="border-t border-slate-200"
                 >
-                  <td className="px-4 py-3 font-medium">{c.name}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-900">{c.name}</td>
                   <td className="px-4">
                     <motion.button
-                      whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
                         c.paused
-                          ? 'border border-amber-200/40 bg-amber-300/10 text-amber-100'
-                          : 'border border-emerald-200/40 bg-emerald-400/10 text-emerald-50'
+                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                          : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                       }`}
                       onClick={() => pause(c)}
                     >
@@ -89,7 +88,7 @@ export default function CampaignsPage() {
                       {c.paused ? 'Paused' : 'Live'}
                     </motion.button>
                   </td>
-                  <td className="px-4 text-slate-300">{c.delay_days} days</td>
+                  <td className="px-4 text-slate-700">{c.delay_days} days</td>
                 </motion.tr>
               ))}
             </tbody>
@@ -97,7 +96,7 @@ export default function CampaignsPage() {
         </div>
       </GlassCard>
 
-      <GlassCard title="New campaign" subtitle="Define mail 1 + mail 2 templates with smart reply-aware follow-ups.">
+      <GlassCard title="New campaign" subtitle="Define Mail 1 + Mail 2 templates with reply-aware follow-ups.">
         <div className="space-y-3 text-sm">
           <input
             className={inputClass}
@@ -129,8 +128,8 @@ export default function CampaignsPage() {
             value={form.mail2_body}
             onChange={(e) => setForm({ ...form, mail2_body: e.target.value })}
           />
-          <label className="space-y-1">
-            <span className="text-slate-200">Delay (days)</span>
+          <label className="space-y-1 text-slate-800">
+            <span className="text-sm font-medium">Delay (days)</span>
             <input
               type="number"
               className={inputClass}
@@ -139,14 +138,14 @@ export default function CampaignsPage() {
             />
           </label>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-400 to-cyan-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-emerald-900/30"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
             onClick={submit}
           >
             Create &amp; queue
           </motion.button>
-          <p className="text-xs text-slate-300">Mail 2 only sends when no reply is detected in the thread after Mail 1.</p>
+          <p className="text-xs text-slate-600">Mail 2 only sends when no reply is detected in the thread after Mail 1.</p>
         </div>
       </GlassCard>
     </div>

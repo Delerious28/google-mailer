@@ -16,21 +16,19 @@ export default function GlassCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="glass-panel gradient-border p-[1px] rounded-2xl"
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="surface-card rounded-2xl p-6"
     >
-      <div className="glass-panel rounded-2xl p-5 space-y-4">
-        {(title || subtitle || actions) && (
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              {title && <h2 className="text-lg font-semibold text-white">{title}</h2>}
-              {subtitle && <p className="text-sm text-slate-300/80">{subtitle}</p>}
-            </div>
-            {actions}
+      {(title || subtitle || actions) && (
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            {title && <h2 className="text-lg font-semibold text-slate-900">{title}</h2>}
+            {subtitle && <p className="text-sm text-slate-600">{subtitle}</p>}
           </div>
-        )}
-        {children}
-      </div>
+          {actions}
+        </div>
+      )}
+      <div className="space-y-4 text-slate-800">{children}</div>
     </motion.div>
   );
 }

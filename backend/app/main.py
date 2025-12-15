@@ -1,7 +1,5 @@
 import os
-from fastapi import Depends, FastAPI, Request
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
@@ -13,23 +11,7 @@ from .routes import auth, leads, campaigns, settings, logs, queue, unsubscribe
 
 Base.metadata.create_all(bind=engine)
 
-
 app = FastAPI(title="Mailer")
-
-
-
-# Serve static files from the frontend/dist directory (production build)
-frontend_dist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../frontend/dist'))
-app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, 'assets')), name="assets")
-
-# Serve the built index.html for all non-API routes
-@app.get("/{full_path:path}")
-async def serve_react_index(full_path: str, request: Request):
-    # Only serve index.html for non-API routes
-    if full_path.startswith("api/"):
-        return {"detail": "Not Found"}
-    index_path = os.path.join(frontend_dist_path, 'index.html')
-    return FileResponse(index_path)
 
 app.add_middleware(
     CORSMiddleware,
