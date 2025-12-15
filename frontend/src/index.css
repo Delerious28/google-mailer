@@ -16,6 +16,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.page-transition-enter,
+.page-transition-exit {
+  will-change: transform, opacity;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }
