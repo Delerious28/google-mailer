@@ -7,6 +7,7 @@ import {
   UserGroupIcon,
   ClipboardDocumentCheckIcon,
   Bars3BottomLeftIcon,
+  Squares2X2Icon,
 } from '@heroicons/react/24/outline';
 
 const navItems = [
@@ -14,6 +15,7 @@ const navItems = [
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   { name: 'Leads', href: '/leads', icon: UserGroupIcon },
   { name: 'Campaigns', href: '/campaigns', icon: Bars3BottomLeftIcon },
+  { name: 'Templates', href: '/templates', icon: Squares2X2Icon },
   { name: 'Queue', href: '/queue', icon: QueueListIcon },
   { name: 'Logs', href: '/logs', icon: ClipboardDocumentCheckIcon },
 ];

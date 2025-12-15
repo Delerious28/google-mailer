@@ -80,3 +80,27 @@ class ScheduledSend(Base):
 
     lead = relationship("Lead")
     campaign = relationship("Campaign")
+
+
+class EmailTemplate(Base):
+    __tablename__ = "email_templates"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    blocks_json = Column(Text, nullable=False)
+    html_body = Column(Text, nullable=False)
+    text_body = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    attachments = relationship("TemplateAttachment", back_populates="template", cascade="all, delete-orphan")
+
+
+class TemplateAttachment(Base):
+    __tablename__ = "template_attachments"
+    id = Column(Integer, primary_key=True, index=True)
+    template_id = Column(Integer, ForeignKey("email_templates.id"))
+    filename = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    size = Column(Integer, default=0)
+
+    template = relationship("EmailTemplate", back_populates="attachments")

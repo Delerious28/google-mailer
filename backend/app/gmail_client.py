@@ -1,8 +1,10 @@
 import base64
 import os
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional
+from email import encoders
+from typing import List, Optional
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -13,12 +15,36 @@ class GmailClient:
     def __init__(self, credentials: Credentials):
         self.credentials = credentials
 
-    def send_message(self, sender: str, to: str, subject: str, body_html: str):
-        message = MIMEMultipart("alternative")
+    def send_message(
+        self,
+        sender: str,
+        to: str,
+        subject: str,
+        body_html: str,
+        body_text: Optional[str] = None,
+        attachments: Optional[List[dict]] = None,
+    ):
+        base_message = MIMEMultipart("alternative")
+        if body_text:
+            base_message.attach(MIMEText(body_text, "plain"))
+        base_message.attach(MIMEText(body_html, "html"))
+
+        message = MIMEMultipart("mixed")
         message["To"] = to
         message["From"] = sender
         message["Subject"] = subject
-        message.attach(MIMEText(body_html, "html"))
+        message.attach(base_message)
+
+        for attachment in attachments or []:
+            path = attachment.get("path")
+            if not path or not os.path.exists(path):
+                continue
+            part = MIMEBase("application", "octet-stream")
+            with open(path, "rb") as f:
+                part.set_payload(f.read())
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", f"attachment; filename={attachment.get('filename')}")
+            message.attach(part)
 
         raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
         try:
